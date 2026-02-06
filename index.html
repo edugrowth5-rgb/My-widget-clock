@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
+    <title>Sagar Royal Clock</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000040">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <style>
+        :root { 
+            --bg: #000040; --text: #FFD700; --circle: #FFD700; 
+            --neon: rgba(255, 215, 0, 0.5); --dim: 1; 
+        }
+
+        html, body {
+            height: 100%; width: 100%; margin: 0; padding: 0;
+            overflow: hidden; position: fixed; touch-action: none;
+            background-color: var(--bg); color: var(--text);
+            display: flex; flex-direction: column; justify-content: center;
+            align-items: center; font-family: 'Times New Roman', serif;
+            transition: all 0.4s ease; opacity: var(--dim);
+        }
+
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+
+        #splash {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000040; display: flex; justify-content: center;
+            align-items: center; z-index: 9999; transition: 0.8s ease;
+        }
+        .splash-hidden { opacity: 0; visibility: hidden; }
+
+        #stopwatch-top {
+            font-size: 26px; font-weight: bold; margin-bottom: 20px;
+            letter-spacing: 4px; text-shadow: 0 0 10px var(--neon);
+            cursor: pointer; font-family: Arial, sans-serif;
+        }
+
+        .clock-circle {
+            width: 275px; height: 275px; border: 6px solid var(--circle);
+            border-radius: 50%; position: relative; flex-shrink: 0;
+            box-shadow: 0 0 25px var(--neon), inset 0 0 15px var(--neon);
+            margin-bottom: 15px; background: radial-gradient(circle, rgba(255,255,255,0.05), transparent);
+        }
+
+        .brand-top { position: absolute; width: 100%; text-align: center; top: 52px; font-weight: bold; font-size: 18px; letter-spacing: 2px; }
+        .brand-bottom { position: absolute; width: 100%; text-align: center; bottom: 62px; font-weight: bold; font-size: 11px; letter-spacing: 4px; }
+
+        .roman-number { position: absolute; width: 100%; height: 100%; text-align: center; font-size: 22px; font-weight: bold; padding: 12px; }
+        
+        .hand { position: absolute; bottom: 50%; left: 50%; transform-origin: bottom center; transform: translateX(-50%); border-radius: 10px; }
+        .hour { width: 7px; height: 55px; background: var(--text); z-index: 3; }
+        .min { width: 4px; height: 85px; background: #fff; border: 0.5px solid #000; z-index: 2; }
+        .sec { width: 2px; height: 100px; background: #ff4444; z-index: 1; }
+        .center-dot { position: absolute; top: 50%; left: 50%; width: 12px; height: 12px; background: var(--text); border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; border: 2px solid #fff; }
+
+        #digital { font-size: 34px; font-weight: bold; letter-spacing: 2px; margin-top: 10px; }
+        #dateDisplay { font-size: 14px; margin-bottom: 20px; opacity: 0.8; letter-spacing: 1px; }
+
+        .section { 
+            background: rgba(255,255,255,0.1); padding: 15px; border-radius: 20px; 
+            width: 85%; max-width: 320px; text-align: center; 
+            border: 1px solid var(--text); backdrop-filter: blur(5px);
+        }
+        
+        .btn-group { display: flex; gap: 10px; width: 100%; justify-content: center; margin-top: 12px; }
+        .btn { border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 13px; transition: 0.2s; }
+        
+        .controls { display: flex; gap: 10px; margin-top: 20px; }
+    </style>
+</head>
+<body onclick="handleInteraction()">
+
+    <div id="splash">
+        <div style="text-align: center;">
+            <span style="font-size: 70px;">👑</span>
+            <h1 style="color: #FFD700; letter-spacing: 6px;">SAGAR ROYAL</h1>
+        </div>
+    </div>
+
+    <div id="stopwatch-top" onclick="toggleStopwatch()">00:00:00</div>
+
+    <div class="clock-circle" id="dial">
+        <div class="center-dot"></div>
+        <div class="brand-top">👑<br>SAGAR</div>
+        <div class="brand-bottom">QUARTZ</div>
+        <div id="hour-hand" class="hand hour"></div>
+        <div id="min-hand" class="hand min"></div>
+        <div id="sec-hand" class="hand sec"></div>
+    </div>
+
+    <div id="digital">00:00:00</div>
+    <div id="dateDisplay">Loading...</div>
+
+    <div class="section">
+        <strong>⏰ Alarm</strong>
+        <input type="time" id="alarmTime" style="width:100%; margin-top:10px; padding:10px; border-radius:8px; border:none; text-align:center; font-size:20px; background: #fff;">
+        <div class="btn-group">
+            <button class="btn" style="background:#2ecc71; color:white;" onclick="setAlarm()">SET</button>
+            <button class="btn" style="background:#e74c3c; color:white;" onclick="stopAlarm()">OFF</button>
+            <button class="btn" style="background:#3498db; color:white;" onclick="resetStopwatch()">RESET</button>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn" style="background:#000; color:#fff; border:1px solid #fff;" onclick="applyTheme('#ffffff', '#000000', 'rgba(0,0,0,0.3)')">Black</button>
+        <button class="btn" style="background:#ff1493; color:#fff;" onclick="applyTheme('#ffffff', '#ff1493', 'rgba(255,20,147,0.4)')">Pink</button>
+        <button class="btn" style="background:#000040; color:#FFD700;" onclick="applyTheme('#000040', '#FFD700', 'rgba(255,215,0,0.6)')">Royal</button>
+    </div>
+
+    <script>
+        window.addEventListener('load', () => setTimeout(() => document.getElementById('splash').classList.add('splash-hidden'), 2000));
+
+        const dial = document.getElementById('dial');
+        const romanNumerals = ["XII", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI"];
+        let audioCtx, alarmTime = null, isAlarmPlaying = false, swInterval, swSeconds = 0, swRunning = false;
+        let wakeLock = null;
+
+        for (let i = 0; i < 12; i++) {
+            let container = document.createElement('div');
+            container.className = 'roman-number';
+            container.style.transform = `rotate(${i * 30}deg)`;
+            let text = document.createElement('div');
+            text.innerText = romanNumerals[i];
+            text.style.transform = `rotate(-${i * 30}deg)`;
+            container.appendChild(text);
+            dial.appendChild(container);
+        }
+
+        function applyTheme(bg, text, glow) {
+            vibrate(50);
+            document.documentElement.style.setProperty('--bg', bg);
+            document.documentElement.style.setProperty('--text', text);
+            document.documentElement.style.setProperty('--circle', text);
+            document.documentElement.style.setProperty('--neon', glow);
+        }
+
+        function vibrate(ms) { if (navigator.vibrate) navigator.vibrate(ms); }
+
+        async function handleInteraction() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            // Screen Wake Lock (Keep screen on)
+            try {
+                if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+            } catch (err) {}
+
+            vibrate(30);
+        }
+
+        function playTick() {
+            if (!audioCtx || audioCtx.state !== 'running') return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(400, audioCtx.currentTime); 
+            gain.gain.setValueAtTime(0.06, audioCtx.currentTime); 
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.04);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.04);
+            vibrate(12);
+        }
+
+        function playMelody() {
+            if (!audioCtx || audioCtx.state !== 'running') return;
+            const notes = [523.25, 659.25, 783.99]; 
+            notes.forEach((freq, i) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i*0.05);
+                gain.gain.setValueAtTime(0, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.06, audioCtx.currentTime + 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 1.2);
+            });
+        }
+
+        function update() {
+            const now = new Date();
+            const ist = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
+            const h = ist.getHours(), m = ist.getMinutes(), s = ist.getSeconds();
+            
+            document.getElementById('digital').innerText = ist.toLocaleTimeString('en-IN');
+            document.getElementById('dateDisplay').innerText = ist.toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+            playTick();
+            document.getElementById('sec-hand').style.transform = `translateX(-50%) rotate(${s * 6}deg)`;
+            document.getElementById('min-hand').style.transform = `translateX(-50%) rotate(${m * 6 + s * 0.1}deg)`;
+            document.getElementById('hour-hand').style.transform = `translateX(-50%) rotate(${(h % 12) * 30 + m * 0.5}deg)`;
+
+            if (isAlarmPlaying && alarmTime === `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}` && s < 30) {
+                vibrate([400, 200, 400]);
+                if (s % 2 === 0) playMelody();
+            }
+        }
+
+        function setAlarm() { handleInteraction(); alarmTime = document.getElementById('alarmTime').value; isAlarmPlaying = true; vibrate(100); }
+        function stopAlarm() { isAlarmPlaying = false; alarmTime = null; vibrate(100); }
+
+        function toggleStopwatch() {
+            vibrate(50);
+            if (swRunning) { clearInterval(swInterval); swRunning = false; }
+            else {
+                swRunning = true;
+                swInterval = setInterval(() => {
+                    swSeconds++;
+                    let hrs = Math.floor(swSeconds / 3600).toString().padStart(2,'0');
+                    let mins = Math.floor((swSeconds % 3600) / 60).toString().padStart(2,'0');
+                    let secs = (swSeconds % 60).toString().padStart(2,'0');
+                    document.getElementById('stopwatch-top').innerText = `${hrs}:${mins}:${secs}`;
+                }, 1000);
+            }
+        }
+
+        function resetStopwatch() { vibrate(100); clearInterval(swInterval); swSeconds = 0; swRunning = false; document.getElementById('stopwatch-top').innerText = "00:00:00"; }
+
+        // Battery Power Save Mode
+        if ('getBattery' in navigator) {
+            navigator.getBattery().then(batt => {
+                const checkBatt = () => {
+                    document.documentElement.style.setProperty('--dim', (batt.level < 0.2 && !batt.charging) ? '0.7' : '1');
+                };
+                batt.addEventListener('levelchange', checkBatt);
+                checkBatt();
+            });
+        }
+
+        setInterval(update, 1000);
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+    </script>
+</body>
+</html>
