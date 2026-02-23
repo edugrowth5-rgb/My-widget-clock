@@ -3,7 +3,7 @@ const assets = [
   './',
   './index.html',
   './manifest.json',
-  './IMG-20260223-WA0000.jpg'
+  './IMG-20260223-WA0002.jpg'
 ];
 
 // Install Service Worker and cache assets
