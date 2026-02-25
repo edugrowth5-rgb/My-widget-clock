@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sagar-clock-v1.1';
+const CACHE_NAME = 'sagar-clock-v1.2';
 const assets = [
   './',
   './index.html',
