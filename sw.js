@@ -1,9 +1,9 @@
-const CACHE_NAME = 'sagar-clock-v1';
+const CACHE_NAME = 'sagar-clock-v1.1';
 const assets = [
   './',
   './index.html',
   './manifest.json',
-  './IMG-20260223-WA0002.jpg'
+  './SagarClock.png'
 ];
 
 // Install Service Worker and cache assets
